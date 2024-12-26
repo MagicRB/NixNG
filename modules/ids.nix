@@ -44,6 +44,7 @@
       attic = 406;
       ntfy-sh = 407;
       matrix-synapse = 412;
+      generic-device-plugin = 411;
       vmail = 5000;
       nobody = 65534;
     };
@@ -72,6 +73,7 @@
       attic = 406;
       ntfy-sh = 407;
       matrix-synapse = 412;
+      generic-device-plugin = 411;
       vmail = 5000;
       nogroup = 65534;
     };

@@ -53,4 +53,5 @@
   ./services/file-hammer.nix
 
   ./nixos
+  ./services/generic-device-plugin.nix
 ]
