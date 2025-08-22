@@ -50,7 +50,9 @@
     {
       config = lib.attrsets.setAttrByPath to (lib.mkMerge defsWithPrio);
       options = lib.attrsets.setAttrByPath from (
-        lib.mkOption { apply = x: lib.attrsets.getAttrFromPath to config; }
+        lib.mkOption {
+          apply = x: lib.attrsets.getAttrFromPath to config;
+        }
       );
     };
 }

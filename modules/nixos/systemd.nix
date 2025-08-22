@@ -50,7 +50,7 @@
 
               path = lib.mkOption {
                 type = lib.types.listOf lib.types.package;
-                default = { };
+                default = [ ];
               };
 
               preStart = lib.mkOption {
@@ -79,14 +79,30 @@
 
                     Group = lib.mkOption { type = lib.types.str; };
 
-                    WorkingDirectory = lib.mkOption { type = lib.types.path; };
+                    SupplementaryGroups = lib.mkOption {
+                      type = lib.types.listOf lib.types.str;
+                      default = [];
+                    };
+
+                    WorkingDirectory = lib.mkOption {
+                      type = lib.types.path;
+                      default = "/";
+                    };
 
                     LoadCredential = lib.mkOption {
                       type = lib.types.listOf lib.types.str;
                       default = [ ];
                     };
 
-                    RuntimeDirectory = lib.mkOption { type = lib.types.str; };
+                    RuntimeDirectory = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                    };
+
+                    StateDirectory = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                    };
 
                     Environment = lib.mkOption {
                       type = lib.types.listOf lib.types.str;
@@ -129,8 +145,15 @@
         n: v:
         let
           combinedDeps = lib.unique (v.after ++ v.wants ++ v.requires);
+
           withCredentials = v.serviceConfig.LoadCredential != [ ];
           credentialsDirectory = "/run/credentials/${n}";
+
+          withRuntimeDirectory = v.serviceConfig.RuntimeDirectory != null;
+          runtimeDirectory = "/run/${v.serviceConfig.RuntimeDirectory}";
+
+          withStateDirectory = v.serviceConfig.StateDirectory != null;
+          stateDirectory = "/var/lib/${v.serviceConfig.StateDirectory}";
         in
         {
           dependencies = lib.flip lib.map combinedDeps (
@@ -196,15 +219,21 @@
           execStart = pkgs.writeShellScript "${n}-start" (
             lib.concatStringsSep "\n" v.serviceConfig.ExecStart
           );
-          group = v.serviceConfig.Group;
           user = v.serviceConfig.User;
+          group = v.serviceConfig.Group;
+          supplementaryGroups = v.serviceConfig.SupplementaryGroups;
           workingDirectory = v.serviceConfig.WorkingDirectory;
           tmpfiles =
             with nglib.nottmpfiles.dsl;
-            lib.optionals withCredentials [
+            (lib.optionals withCredentials [
               (d credentialsDirectory "0700" config.init.services.${n}.user config.init.services.${n}.group _ _)
               (R credentialsDirectory "0700" config.init.services.${n}.user config.init.services.${n}.group _ _)
-            ];
+            ]) ++ (lib.optionals withRuntimeDirectory [
+              (d runtimeDirectory "0700" config.init.services.${n}.user config.init.services.${n}.group _ _)
+              (R runtimeDirectory "0700" config.init.services.${n}.user config.init.services.${n}.group _ _)
+            ]) ++ (lib.optionals withStateDirectory [
+              (d stateDirectory "0700" config.init.services.${n}.user config.init.services.${n}.group _ _)
+            ]);
         }
       )
     );

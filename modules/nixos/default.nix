@@ -17,6 +17,7 @@
     ./nix.nix
     ./meta.nix
     ./networking.nix
+    ./environment.nix
   ]);
 
   options.nixos = lib.mkOption {

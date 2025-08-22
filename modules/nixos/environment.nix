@@ -1,0 +1,29 @@
+{ nglib, lib, options, ... }:
+{
+  imports = [
+    (nglib.mkOptionsEqual
+      [
+        "environment"
+        "etc"
+      ]
+      [
+        "nixos"
+        "environment"
+        "etc"
+      ]
+      lib.id
+    )
+    (nglib.mkOptionsEqual
+      [
+        "environment"
+        "systemPackages"
+      ]
+      [
+        "nixos"
+        "environment"
+        "systemPackages"
+      ]
+      lib.id
+    )
+  ];
+}
