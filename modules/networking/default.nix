@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 {
   options.networking = {
     hostName = lib.mkOption {
@@ -19,7 +19,30 @@
         The domain name is not configured for DNS resolution purposes, see search instead.
       '';
     };
+
+    hosts = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+      description = ''
+        Locally defined maps of hostnames to IP addresses.
+      '';
+    };
   };
 
-  config = { };
+  config = {
+    networking.hosts = {
+      localhost = [
+        "127.0.0.1"
+        "::1"
+      ];
+      ${config.networking.hostName} = [ "127.0.0.2" ];
+    };
+
+    environment.etc."hosts".text = ''
+      ${lib.concatStringsSep "\n" (
+        lib.mapAttrsToList (
+          hostname: addresses: lib.concatStringsSep " " addresses + " " + hostname
+        ) config.networking.hosts
+      )}
+    '';
+  };
 }
